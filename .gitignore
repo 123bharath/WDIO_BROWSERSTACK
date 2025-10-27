@@ -1,0 +1,20 @@
+# Node.js dependencies
+node_modules/
+dist/
+build/
+.cache/
+.env
+logs/
+*.log
+coverage/
+vscode/
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Reports
+allure-results/
+allure-report/
+test-output/
+reports/
