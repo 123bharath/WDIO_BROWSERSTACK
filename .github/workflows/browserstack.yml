@@ -1,15 +1,24 @@
 name: WebdriverIO BrowserStack Test
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+#   push:
+#     branches: [ main ]
+#   pull_request:
+#     branches: [ main ]
   workflow_dispatch:
+    inputs:
+      run_local:
+        description: "Run local tests (wdio.conf.js)?"
+        required: false
+        default: "false"
+      run_browserstack:
+        description: "Run BrowserStack tests (wdio.browserstack.conf.js)?"
+        required: false
+        default: "true"
 
 jobs:
   wdio-tests:
-    name: Run WebdriverIO Tests on BrowserStack
+    name: Run WebdriverIO Tests
     runs-on: ubuntu-latest
 
     steps:
@@ -24,78 +33,23 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Optionally run local tests first (wdio.conf.js)
+      # Run local tests conditionally
       - name: Run local tests
+        if: ${{ github.event.inputs.run_local == 'true' }}
         run: npx wdio run ./wdio.conf.js
 
-      # Run BrowserStack tests (wdio.browserstack.conf.js)
-      - name: Run tests on BrowserStack
+      # Run BrowserStack tests conditionally
+      - name: Run BrowserStack tests
+        if: ${{ github.event.inputs.run_browserstack == 'true' }}
         env:
           BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
           BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
         run: npx wdio run ./wdio.browserstack.conf.js
 
-      - name: Upload Allure Report (optional)
+      # Optional report upload
+      - name: Upload Allure Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: allure-results
           path: allure-results
-
-
-##
-# name: WebdriverIO BrowserStack Test
-
-# on:
-#   push:
-#     branches: [ main ]
-#   pull_request:
-#     branches: [ main ]
-#   workflow_dispatch:
-#     inputs:
-#       run_local:
-#         description: "Run local tests (wdio.conf.js)?"
-#         required: false
-#         default: "false"
-#       run_browserstack:
-#         description: "Run BrowserStack tests (wdio.browserstack.conf.js)?"
-#         required: false
-#         default: "true"
-
-# jobs:
-#   wdio-tests:
-#     name: Run WebdriverIO Tests
-#     runs-on: ubuntu-latest
-
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v4
-
-#       - name: Setup Node.js
-#         uses: actions/setup-node@v4
-#         with:
-#           node-version: 20
-
-#       - name: Install dependencies
-#         run: npm ci
-
-#       # Run local tests conditionally
-#       - name: Run local tests
-#         if: ${{ github.event.inputs.run_local == 'true' }}
-#         run: npx wdio run ./wdio.conf.js
-
-#       # Run BrowserStack tests conditionally
-#       - name: Run BrowserStack tests
-#         if: ${{ github.event.inputs.run_browserstack == 'true' }}
-#         env:
-#           BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
-#           BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
-#         run: npx wdio run ./wdio.browserstack.conf.js
-
-#       # Optional report upload
-#       - name: Upload Allure Report
-#         if: always()
-#         uses: actions/upload-artifact@v4
-#         with:
-#           name: allure-results
-#           path: allure-results
